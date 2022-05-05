@@ -65,6 +65,15 @@ Summarizing the data for better understanding and visualization and also helps i
 Create new variable that contains year
 ```{r, echo = TRUE}
 NFLX$Year <- format(as.Date(NFLX$Date, format = "%Y-%m-%d"),"%Y")
+#Filter the years to get the requires years for the first_half and making sure that the Date in in the right format.
+NFLX <- NFLX %>%
+  mutate(Date = ymd(Date))
+
+#We need to change the data to all the prices in one column to make it easier to plot that on the graph.
+#Using the pivot_longer() function to do so.
+NFLX_updated <- NFLX %>%
+  pivot_longer(c('Open', 'Close', 'High', 'Low'), names_to = "Price", values_to = "Amount")
+
 ```
 
 I would like to divide the data set in 2 different parts and make 2 different visualization plots and compare both at the end of the project and see how time frame has affected the data.
@@ -75,20 +84,33 @@ This will be the data of 2 years of stock prices for Netflix from May 2018 to Ma
 I am naming it `first_half` of the data.
 ```{r}
 
-#Filter the years to get the requires years for the first_half and making sure that the Date in in the right format.
+#Filter the years to get the requires years for the first_half 
+#and making sure that the Date in in the right format.
 first_half <- NFLX %>%
   filter(Year <= 2019) %>%
   mutate(Date = ymd(Date))
 
-#We need to change the data to all the prices in one column to make it easier to plot that on the graph.
+#We need to change the data to all the prices in one column to make 
 #Using the pivot_longer() function to do so.
-first_half <- pivot_longer(first_half, c('Open', 'Close', 'High', 'Low'), names_to = "Price", values_to = "Amount")
+first_half <- 
+  pivot_longer(first_half, c('Open', 'Close', 'High', 'Low'), 
+               names_to = "Price", values_to = "Amount")
 
 
 ```
 
 ```{r}
-plot_1 <- ggplot(first_half, aes(x = Date, y = Amount, fill = Price)) + geom_col(position = position_dodge()) + scale_x_date(date_labels =  "%b %y", date_breaks = "3 months") + ylim(c(0, 800)) + 
+plot_1 <- ggplot(
+  first_half, aes(x = Date, fill = Price)
+  ) + 
+  #geom_col(position = position_dodge()) + 
+  geom_bar(aes(y = Amount), position = "dodge", stat = "identity") +
+  geom_point(aes(y = Volume / 500000), size = 0.5, color = 'black') +
+  geom_line(aes(y = Volume/500000), color = 'black', size = 0.5) +
+  scale_x_date(date_labels =  "%b %y", date_breaks = "3 months") +
+  scale_y_continuous(name = 'Amount in Dollars',
+                     sec.axis = sec_axis(~.*500000, name = 'Volume')) + 
+  #ylim(c(0, 800)) + 
   labs(title = "Change in the Prices of Netflix Stock between 2018 to 2020",
        x = "Date(in month and year)",
        y = "Amount in Dollars")
@@ -115,7 +137,15 @@ second_half <- pivot_longer(second_half, c('Open', 'Close', 'High', 'Low'), name
 ```
 
 ```{r, fig.align = "center", fig.width = 7.5}
-plot_2 <- ggplot(second_half, aes(x = Date, y = Amount, fill = Price)) + geom_col(position = position_dodge()) + scale_x_date(date_labels =  "%b %y", date_breaks = "3 months") + ylim(c(0, 800)) + 
+plot_2 <- ggplot(second_half, aes(x = Date, y = Amount, fill = Price)) + 
+  #geom_col(position = position_dodge()) + 
+    geom_bar(aes(y = Amount), position = "dodge", stat = "identity") +
+  geom_point(aes(y = Volume / 500000), size = 0.5, color = 'black') +
+  geom_line(aes(y = Volume/500000), color = 'black', size = 0.5) +
+  scale_x_date(date_labels =  "%b %y", date_breaks = "3 months") +
+  scale_y_continuous(name = 'Amount in Dollars',
+                     sec.axis = sec_axis(~.*500000, name = 'Volume')) + 
+  #scale_x_date(date_labels =  "%b %y", date_breaks = "3 months") + ylim(c(0, 800)) + 
   labs(title = "Change in the Prices of Netflix Stock between 2020 to 2022",
        x = "Date(in month and year)",
        y = "Amount in Dollars")
@@ -125,7 +155,20 @@ plot_2
 ## Comparing both the plots
 
 ```{r, fig.align = "center", fig.width = 7.5}
-plot_grid(plot_1, plot_2)
+plot_3 <- ggplot(NFLX_updated, aes(x = Date, y = Amount, fill = Price)) + 
+  #geom_col(position = position_dodge()) + 
+    geom_bar(aes(y = Amount), position = "dodge", stat = "identity") +
+  geom_point(aes(y = Volume / 500000), size = 0.5, color = 'black') +
+  geom_line(aes(y = Volume/500000), color = 'black', size = 0.5) +
+  scale_x_date(date_labels =  "%b %y", date_breaks = "6 months") +
+  scale_y_continuous(name = 'Amount in Dollars',
+                     sec.axis = sec_axis(~.*500000, name = 'Volume')) + 
+  #scale_x_date(date_labels =  "%b %y", date_breaks = "3 months") + ylim(c(0, 800)) + 
+  labs(title = "Change in the Prices of Netflix Stock between 2018 to 2022",
+       x = "Date(in month and year)",
+       y = "Amount in Dollars")
+#plot_grid(plot_1, plot_2)
+plot_3
 ```
 Now that we have 2 different plots we can see what are the similarities and differences in both, I have plotted both on the same scale just different time frames and that shows how the graph changes over a period of time. 
 
@@ -135,6 +178,13 @@ Now that we have 2 different plots we can see what are the similarities and diff
 
 
 * But no prediction can be completely accurate and reliable that the reason its prediction and also its stocks we are talking about, you never know what happens when!!
+
+## Thank You and have a great Summer!!
+```{r, fig.align = "center", out.width = '800'}
+
+knitr::include_graphics("https://www.lifewire.com/thmb/PIXIgT-KFs6Ke1FhU4Wm4X-jTQk=/650x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/desktopnexus-sunflowers-summer-wallpaper-58d554be3df78c516232fd1b.jpg")
+
+```
 
 
 
