@@ -1,0 +1,141 @@
+---
+title: "Project 3A"
+author: 'Author: Preet Patel'
+date: "`r format(Sys.time(), '%B %d, %Y @ %I:%M %p')`"
+output:
+  ioslides_presentation: default
+  slidy_presentation: default
+---
+
+```{r global_options, include = FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  comment = NA
+)
+```
+## Loading Package 
+
+* For analysis of data and plotting the graphs 
+```{r, echo = TRUE}
+library(tidyverse)
+```
+
+* For making changes in date formats
+```{r, echo = TRUE}
+library(lubridate)
+```
+
+* For making the grid pf plots for comparison
+```{r, echo = TRUE}
+library(cowplot)
+```
+
+## Importing data
+
+This data is downloaded from the yahoo finance website [Netflix Stock Data](https://finance.yahoo.com/quote/NFLX/history?period1=1522627200&period2=1648857600&interval=1mo&filter=history&frequency=1mo&includeAdjustedClose=true)
+
+It is updated everyday but I chose monthly data instead of daily
+The data is from April 2018 - April 2022
+```{r, echo = TRUE}
+NFLX <- read.csv("NFLX.csv")
+glimpse(NFLX)
+```
+
+## Each variable means what!!!
+
+* `Date`: the time frame of the observation (containing monthly data).
+
+* `Open`: The price at which the stock was opened in that month.
+
+* `High`: The highest price reached by the stock in that month.
+
+* `Low`:  The lowest price reached by the stock in that month.
+
+* `Close`: The price at which the stock was closed in that month.
+
+* `Adj.Close`: The adjustment made after the market was close(mostly the same as the close variable).
+
+* `Volume`: The amount of stock bought and sold during that month.
+
+## Summarizing 
+
+Summarizing the data for better understanding and visualization and also helps in the plotting process.
+Create new variable that contains year
+```{r, echo = TRUE}
+NFLX$Year <- format(as.Date(NFLX$Date, format = "%Y-%m-%d"),"%Y")
+```
+
+I would like to divide the data set in 2 different parts and make 2 different visualization plots and compare both at the end of the project and see how time frame has affected the data.
+
+## First Half of the data(2018 - 2020)
+
+This will be the data of 2 years of stock prices for Netflix from May 2018 to May 2020.
+I am naming it `first_half` of the data.
+```{r}
+
+#Filter the years to get the requires years for the first_half and making sure that the Date in in the right format.
+first_half <- NFLX %>%
+  filter(Year <= 2019) %>%
+  mutate(Date = ymd(Date))
+
+#We need to change the data to all the prices in one column to make it easier to plot that on the graph.
+#Using the pivot_longer() function to do so.
+first_half <- pivot_longer(first_half, c('Open', 'Close', 'High', 'Low'), names_to = "Price", values_to = "Amount")
+
+
+```
+
+```{r}
+plot_1 <- ggplot(first_half, aes(x = Date, y = Amount, fill = Price)) + geom_col(position = position_dodge()) + scale_x_date(date_labels =  "%b %y", date_breaks = "3 months") + ylim(c(0, 800)) + 
+  labs(title = "Change in the Prices of Netflix Stock between 2018 to 2020",
+       x = "Date(in month and year)",
+       y = "Amount in Dollars")
+plot_1
+```
+
+## Second half of the data(2020 - 2022)
+
+This will be the data of remaining years of stock prices for Netflix from May 2020 to May 2022.
+I am naming it `second_half` of the data.
+```{r, fig.align = "center", fig.width = 7.5}
+
+#Filter the years to get the requires years for the second_half and making sure that the Date id in the right format
+second_half <- NFLX %>%
+  filter(Year >= 2020) %>%
+  mutate(Date = ymd(Date))
+
+#We need to change the data to all the prices in one column to make it easier to plot that on the graph.
+
+#Using the pivot_longer() function to do so.
+second_half <- pivot_longer(second_half, c('Open', 'Close', 'High', 'Low'), names_to = "Price", values_to = "Amount")
+
+
+```
+
+```{r, fig.align = "center", fig.width = 7.5}
+plot_2 <- ggplot(second_half, aes(x = Date, y = Amount, fill = Price)) + geom_col(position = position_dodge()) + scale_x_date(date_labels =  "%b %y", date_breaks = "3 months") + ylim(c(0, 800)) + 
+  labs(title = "Change in the Prices of Netflix Stock between 2020 to 2022",
+       x = "Date(in month and year)",
+       y = "Amount in Dollars")
+plot_2
+```
+
+## Comparing both the plots
+
+```{r, fig.align = "center", fig.width = 7.5}
+plot_grid(plot_1, plot_2)
+```
+Now that we have 2 different plots we can see what are the similarities and differences in both, I have plotted both on the same scale just different time frames and that shows how the graph changes over a period of time. 
+
+## Something Intresting about this dataset
+
+* Something interesting about my data set is that even though it is one of the widely used entertainment platforms over the world there are fair chances that it may not stay the same, Meaning due to some of the upcoming changes in Netflix and many more competing platforms it has been predicted that there are chances that the Netflix stocks can go even lower than this.
+
+
+* But no prediction can be completely accurate and reliable that the reason its prediction and also its stocks we are talking about, you never know what happens when!!
+
+
+
+
