@@ -27,10 +27,10 @@ library(tidyverse)
 library(lubridate)
 ```
 
-* For making the grid pf plots for comparison
-```{r, echo = TRUE}
-library(cowplot)
-```
+<!-- * For making the grid pf plots for comparison -->
+<!-- ```{r, echo = TRUE} -->
+<!-- library(cowplot) -->
+<!-- ``` -->
 
 ## Importing data
 
